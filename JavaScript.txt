@@ -117,10 +117,13 @@ Spread operator
 Rest parameter
     const order = [20.17, 18.67, 1.50, "cheese", "eggs", "milk", "bread"];
     const [total, subtotal, tax, ...items] = order;
-    console.log(total, subtotal, tax, items);
 
-    This code takes the values of the order array and assigns them to individual variables. By using the rest parameter,
-        items are assigned the rest of the values in the array (as an array).
+    This code takes the values of the 'order' array and assigns the first 3 to individual variables, then the rest to a
+        separate array called 'items' using the rest parameter.
+
+    You can also write a function that takes as argument any number of variables by including a Rest parameter.
+
+
 
 
 
