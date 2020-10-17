@@ -6,8 +6,22 @@ To declare variables use keywords var, let or const.
         use const as a default and let when const can't be used.
 
 Hoisting: before any js code is executed, all variables declared with a 'var' are hoisted - meaning the declaration of
-the variables is raised to the top of the scope of that function (decalration not initialisation as that would mess with the code
+the variables is raised to the top of the scope of that function (declaration not initialisation as that would mess with the code
 itself).
+
+JS doesn't require you to pass arguments to a function, even if it is set up to assign them to a variable. Any you don't define get the value undefined.
+
+In javascript, functions are objects, you can use them exactly how you would use a regular object. They are also callable (can be invoked).
+    For example, foo(sum(1, 2)) is passing 3 to foo, not the function sum itself. Whereas foo(sum) is passing the function sum as a argument to foo.
+
+Since functions are objects, the following is valid code:
+    function sayHi() {
+      console.log("Hi");
+    }
+
+    var func = sayHi;  // 'func' and 'sayHi' will point to the same object, the object being a function that prints "Hi" to the console.
+
+    func();            // although there was never a function defined called 'func', this will still work because of the above assignment
 
 let and const variables are scoped to the block of code ( {    } ) rather than the full function.
 This prevents variables from being accessed until after they've been declared - as it should be. prevents hard to find bugs.
@@ -256,7 +270,7 @@ There is also an innerText property, this one returns the text of an element as 
 
 CREATING AND ADDING NEW ELEMENTS TO PAGE
 
-You create an element ise the createElement() method like so:
+You create an element useing the createElement() method like so:
 
 // create a brand new <span> element
     const newSpan = document.createElement('span');
@@ -272,7 +286,7 @@ Then, you use the appendChild() method to add your new element to the end of ano
     mainHeading.appendChild(newSpan);
 
 The createTextNode method creates..you guessed it, textNodes! Now you're wondering what the fuck a textNode is. I don't know
-    either but lets read on and find out... Basically, a text node is plain text that you apend to an element like paragraph
+    either but lets read on and find out... Basically, a text node is plain text that you append to an element like paragraph
     before you append the paragraph to another element.
 
 // create a paragraph element
@@ -331,6 +345,223 @@ Or you can use the elements own remove method to remove it directly. Much quicke
 To get the first child of an element use the firstElementChild property.
     The difference between .firstChild and .firstElementChild, is that .firstElementChild will always return the first element,
     while .firstChild might return whitespace (if there is any) to preserve the formatting of the underlying HTML source code.
+
+
+DYNAMIC STYLING
+
+To change the look of an element at run time, you can do it one of two ways. The first is add a class to an element when an event
+    occurs. The new class can have different styles rules that apply to that class in CSS:
+        const element_name_in_js = document.querySelector('h1');
+        element_name_in_js.className = 'current_class new_class';
+
+The other way is to add styles directly in JavaScript using the Style attribute.
+    const mainHeading = document.querySelector('h1');
+    mainHeading.style.color = 'red';
+    mainHeading.style.fontSize = '2em';
+using the above method, each styling change must be done one line at a time. No shortcuts.
+
+But we can use the '.style.cssText' property to set multiple CSS styles at once; like so:
+    const mainHeading = document.querySelector('h1');
+    mainHeading.style.cssText = 'color: blue; background-color: orange; font-size: 3.5em';
+
+Notice that when using the .style.cssText property, you write the CSS styles just as you would in a stylesheet; so you
+    write font-size rather than fontSize. This is different than using the individual .style.<property> way.
+    The .style.cssText will overwrite anything that's already in an elements .style attribute (won't change css sheet
+    rules but attribute css override stylesheet rules for identical properties).
+
+ATTRIBUTES
+
+Another way to set styles for an element is to bypass the .style.<property> and .style.cssText properties altogether and
+    use the .setAttribute() method:
+
+        const mainHeading = document.querySelector('h1');
+        mainHeading.setAttribute('style', 'color: blue; background-color: orange; font-size: 3.5em;');
+
+The setAttribute() method is not just for styling page elements. You can use this method to set any attribute for an
+    element. If you want to give an element an ID, you can do that!:
+
+        const mainHeading = document.querySelector('h1');
+
+        // add an ID to the heading's sibling element
+        mainHeading.nextElementSibling.setAttribute('id', 'heading-sibling');
+
+        // use the newly added ID to access that element
+        document.querySelector('#heading-sibling').style.backgroundColor = 'red';
+
+
+The above described methods however are not recommended. CSS should handle styling, HTML should handle page content, and JavaScript
+    should handle the links between them. Adding CSS attributes via JS is not a best practice as it muddies the code and makes maintenance
+    difficult (things are easy to find in a large code base).
+
+Therefore, best practice is to add css styling rules to various classes, then add those classes to elements you want the styling to apply to.
+
+.className property returns a space separated string of the elements classes. So, element.className = 'new-class' will change the class's of that
+    element. Though - this will erase any classes already applied to the element.
+
+A better way is to use the classList property to return a DOMTokenList. The .classList property has a number of properties of its own. Some of the
+    most popularly used ones are:
+        .add() - to add a class to the list
+        .remove() - to remove a class from the list
+        .toggle() - to add the class if it doesn't exists or remove it from the list if it does already exist
+        .contains() - returns a boolean based on if the class exists in the list or not
+
+Example using those properties:
+    const mainHeading = document.querySelector('h1');
+    mainHeading.classList.add('new_class_name'); //this will add the new class without erasing any existing classes.
+
+EVENTS
+
+// start displaying all events on the document object
+    monitorEvents(document);
+
+// turn off the displaying of all events on the document object.
+    unmonitorEvents(document);
+
+monitorEvents is for development/testing purposes only. It's not supposed to be used for production code.
+
+In the inheritance hierarchy of javascript, all 'Elements' inherit from 'Nodes', and all 'Nodes' inherit from the EventTarget interface.
+In fact, the EventTarget is the top of the food chain...The document object itself inherits from it - as does every element - while it inherits from nothing.
+
+The EventTarget interface has no properties and 3 methods:
+    - .addEventListener()
+    - .removeEventListener()
+    - .dispatchEvent()
+
+Adding an event listener, with the appropriate inherited method, allows JS to listen for and respond to an event.
+Let's use some pseudo-code to explain how to set an event listener:
+    event-target.addEventListener(event-to-listen-for, function-to-run-when-an-event-happens);
+
+So, an event listener needs 3 things, the target, the type (click, double click, given key on the keyboard etc) and the listener (function executed when event happens).
+
+Example:
+    const mainHeading = document.querySelector('h1');
+    mainHeading.addEventListener('click', function () {
+      console.log('The heading was clicked!');
+    });
+
+Lots of types of events, see list here: https://developer.mozilla.org/en-US/docs/Web/Events
+
+To stop listening for an event, use the .removeEventListener() method.
+
+JavaScript does this thing called type coercion where it will try to convert the items being compared into the same type,
+    e.g. string, number etc. JavaScript has the double equality (==) operator that will allow type coercion. It also has the
+    triple equality (===) symbol that will prevent type coercion when comparing.
+
+The triple equality also only returns true when referring to the same object in memory, two separate but identical objects would return false.
+
+The reason this matters is that the .removeEventListener() method requires you to pass the same exact listener function to it as the one you
+    passed to .addEventListener().
+
+event-target.removeEventListener(event-to-listen-for, function-to-remove);
+So a .removeEventListener() needs three things:
+
+an event target
+the type of event to listen for
+the function to remove - this is called the listener
+
+Remember, the listener function must be the exact same function as the one used in the .addEventListener() call...not just
+    an identical looking function. Let's look at a couple of examples.
+
+        function myEventListeningFunction() {
+            console.log('howdy');
+        }
+
+        // adds a listener for clicks, to run the `myEventListeningFunction` function
+        document.addEventListener('click', myEventListeningFunction);
+
+        // immediately removes the click listener that should run the `myEventListeningFunction` function
+        document.removeEventListener('click', myEventListeningFunction);
+
+
+As you can see above, the add and remove event listener methods require the same target, type and listener (function).
+Now lets look at code that fails:
+
+// adds a listener for clicks, to run the `myEventListeningFunction` function
+document.addEventListener('click', function myEventListeningFunction() {
+    console.log('howdy');
+});
+
+// immediately removes the click listener that should run the `myEventListeningFunction` function
+document.removeEventListener('click', function myEventListeningFunction() {
+    console.log('howdy');
+});
+
+This code does not successfully remove the event listener. Again, why does this not work?
+.addEventListener() and .removeEventListener have their own distinct listener functions...they do not refer to the exact
+    same function in memory (this is the reason the event listener removal fails!)
+
+PHASES OF AN EVENT
+
+Events have 3 phases: Capturing, At-Target and Bubbling - in that order.
+When an event occurs, first - line by line - the event listener checks each element encompassing the clicked target for a EventListener
+    made to run during the capturing phase.
+When the target is reached, it switches to At-Target phase.
+Then it switches to Bubbling phase, the same as capturing phase but in the opposite direction.
+
+Most EventListeners are executed during 'At-Target'.
+
+The default of any EventListener is to be executed during Bubbling phase (first step of which is At-Target, so it encompasses that phase). If you want
+    An event listener to be executed during the capturing phase of an element, add a third argument to your event listener, a boolean value of true.
+
+The phases of an event exist to allow an order of events firing if there are multiple eventListeners attached to a single event. In addition, if an element
+    is clicked, a click event occurs, but that element may not have an action listener itself, it may be a part of a larger element with a listener. In this
+    case the clicked element is the target, and the event occurs during the bubbling phase when the event phase reaches the larget element with a listener attached.
+
+When an event occurs, the browser creates an event object with all the events data, and returns this to the listener method.
+That is to say, if instead of:
+    document.addEventListener('click', function () {
+       console.log('The document was clicked');
+    });
+we instead wrote an event listener like this:
+    document.addEventListener('click', function (event) {  // ← the `event` parameter is new!
+       console.log('The document was clicked');
+    });
+we would have the event object in our function to use.
+
+event.target gives the target element of an event - even if the target was not specifically where the eventListener was applied. Because we have access
+    to the target element directly, we can access its .textContent, modify its styles, update the classes it has - we can do anything we want to it! This means
+    we can have one event listener for many elements thereby improving performance of our webpage. You could even use one listener for each type of required
+    event on a page - by applying the listener to a large encompassing div container.
+
+The event object for each type of event contains a lot of information. Read documentation on MDN for say a mouse event etc for actual variable names.
+
+The event object also has a .preventDefault() method...errr..function. This, prevents the default behavior of a given element. Say, you didn't wan't a submit
+    button to immediately send a forms data to where-ever, but wanted to validate the form data first - you'd need to prevent default. Or, if you didn't want
+    an <a> link to open a webpage, but just run some code that did something else instead, you'd prevent default.
+
+Say you wanted an eventListener that only fired when an event (click) occurred on a specific type of element, you could do something like:
+    document.querySelector('#elementID').addEventListener('click', function (evt) {
+        if (evt.target.nodeName === 'SPAN') {  // ← verifies target is desired element
+            console.log('A span was clicked with text ' + evt.target.textContent);
+        }
+    });
+The if statement in the above code could easily be replaced with a check of elements class or ID before event is responded to.
+
+DOM NEEDS TO BE READY FOR JS
+
+The Dom is parsed in order, html -> tokens -> nodes -> DOM. Each token is parsed in sequence and when the parser gets to the <script> file it is downloaded
+    and the code executed. Thus, if the script file is at the top of the html page, it will reference html elements that haven't yet been parsed and therefore
+    don't exist. So, the Javascript file must be linked as the last thing in the html page.
+
+Unless...there is another solution to this problem!
+
+The Dom fires an event when it is finished loading everything for the document-object.
+An eventListener listening for 'DOMContentLoaded' event, with JS code in its listener function would bypass the need for the javascript file to be required
+    at the bottom of the page. You could add such a file to the header:
+
+         document.addEventListener('DOMContentLoaded', function () {
+                  document.querySelector('footer').style.backgroundColor = 'purple';
+          });
+
+But - the above requires more code and unnecessarily complicates things. Just put the <script> tag at the bottom of your html page.
+
+
+
+
+
+
+
+
 
 
 
