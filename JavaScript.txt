@@ -555,10 +555,58 @@ An eventListener listening for 'DOMContentLoaded' event, with JS code in its lis
 
 But - the above requires more code and unnecessarily complicates things. Just put the <script> tag at the bottom of your html page.
 
+MEASURING AND IMPROVING PERFORMANCE OF CODE:
+
+First, how to measure:
+
+The performance.now() function starts counting in milliseconds from the moment the page loads. So, to get a count of how long it took some code to run, use the
+    function twice - before and after the code to be measured - and subtract the first value from the second. You'll get an accurate measure of how long it took the code to run:
+
+        const startingTime = performance.now();
+        //code that takes ages
+        const endingTime = performance.now();
+        console.log('This code took ' + (endingTime - startingTime) + ' milliseconds.');
+
+The browser is constantly working to make the screen match the DOM. When we add a new element, the browser has to run through a reflow calculation (to determine the
+    new screen layout) and then repaint the screen. This takes time. So - when possible, add many extra elements all at once instead of adding many individual elements
+    to a page one at a time - that will make your page load slower.
+
+To do the above, use document fragments to combine the required elements, then add them to the page all at once, like so:
+
+    const fragment = document.createDocumentFragment();  // ← uses a 'DocumentFragment' instead of a 'div'
+
+    for (let i = 0; i < 100; i++) {
+        const newElement = document.createElement('p');
+        newElement.innerText = 'This is paragraph number ' + i;
+
+        fragment.appendChild(newElement);
+    }
+
+    document.body.appendChild(fragment); // reflow and repaint here -- once!
 
 
+Reflow is the process of the browser laying out the page. It happens when you first display the DOM (generally after the DOM and CSS have been loaded),
+    and happens again every time something could change the layout. This is a fairly expensive (slow) process.
 
+Repaint happens after reflow as the browser draws the new layout to the screen. This is fairly quick, but you still want to limit how often it happens.
 
+If you have to make a group of changes, hide/change all/show is a great pattern to use if the changes are relatively contained.
+
+    // hide section
+    document.getElementById("section").style.display = "none";
+
+    // delete or add elements
+
+    // show section
+    document.getElementById("section").style.display = "block";
+
+This is surprisingly fast, to the cost of one reflow and two repaints (and little else). It's fast because hiding doesn't change the layout, it just erases that section of the
+    screen (1 repaint). When you make the changed section visible again, that's a reflow and a repaint.
+
+VIRTUAL DOM
+This is why React and other "virtual DOM" libraries are so popular. You don't make changes to the DOM, but make changes to another structure (a "virtual DOM")
+    and the library calculates the best way to update the screen to match. The catch is you then have to rework your code to use whatever library you're adopting, and sometimes
+    you can do a better job updating the screen yourself (because you understand your own unique situation).
 
 
 
