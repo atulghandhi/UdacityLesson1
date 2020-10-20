@@ -608,17 +608,55 @@ This is why React and other "virtual DOM" libraries are so popular. You don't ma
     and the library calculates the best way to update the screen to match. The catch is you then have to rework your code to use whatever library you're adopting, and sometimes
     you can do a better job updating the screen yourself (because you understand your own unique situation).
 
+ JavaScript is a single-threaded programming language, which means it can only execute one thing at a time. JavaScript keeps track of what functions are running by using the Call Stack.
 
+EventListeners are Web API's. Meaning, when the call stack reaches an eventListener it passes the contained function to the browser - as the browser knows when the event occurs.
+    Then, when the event does occur - the browser moves the listener function to the 'Queue'. JS has a run-til-completion rule so when the call stack has code running it is run til
+    its completed. Then - any pending listener functions that are waiting to be run in the Queue are run. Note - that the call stack must first be empty before the Queue is even checked.
 
+ 1) current synchronous code runs to completion, and
+ 2) events are processed when the browser isn't busy. Asynchronous code (such as loading an image) runs outside of this loop and sends an event when it is done.
 
+Similarly to .addEventListener() code being run at some later point, there is the setTimeout() function that will run code at a point later in time. The setTimeout() function takes:
+    - a function to run at some later time
+    - the number of milliseconds the code should wait before running the function
 
+e.g: setTimeout(function sayHi() {
+         console.log('Howdy');
+     }, 1000);
+     //the function will be passed to a browser, that will start a timer, and when it expires (1 second later) the function will move to Queue to be executed once call stack is empty.
+     //this means you can use setTimeout with a delay of 0ms to pass a function to queue, so it runs after the call stack.
 
+Because JS is run to completion - you may have a massive task that needs to be done that will prevent user interaction until the code has run - since user interaction depends on eventListeners
+    in the Queue which have to wait for the call stack to clear. To fix this - you can divide up your task and run it via setTimeout (0 delay) incrementally - thereby each iteration of your
+    task will be added to the queue and this will give Queue tasks a change to run. Example:
+        let count = 1
 
+        function generateParagraphs() {
+            const fragment = document.createDocumentFragment();
 
+            for (let i = 1; i <= 500; i++) {
+                const newElement = document.createElement('p');
+                newElement.textContent = 'This is paragraph number ' + count;
+                count = count + 1;
 
+                fragment.appendChild(newElement);
+            }
 
+            document.body.appendChild(fragment);
 
+            if (count < 20000) {
+                setTimeout(generateParagraphs, 0);
+            }
+        }
 
+        generateParagraphs();
+
+This code starts off by setting a count variable to 1. This will keep track of the number of paragraphs that have been added. The generateParagraphs() function will add 500 paragraphs to the
+    page each time it's invoked. The interesting thing is that there's a setTimeout() call at the end of the generateParagraphs() function. If there are less than twenty thousand elements,
+    then the setTimeout() will be used to call the generateParagraphs() function.
+    If you try running this code on a page, you can still interact with the page while the code is running. It doesn't lock up or freeze the page. And it doesn't lock up or freeze because
+    of the setTimeout() calls.
 
 
 
